@@ -39,17 +39,32 @@ export function signup(full_name, email, password) {
 
 export function getCurrentUser(token) {
   return request("/auth/me", {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+    headers: { Authorization: `Bearer ${token}` },
   });
 }
 
 export function getLeads(token) {
   return request("/leads", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function createLead(token, lead) {
+  return fetch(`${API_BASE_URL}/leads`, {
+    method: "POST",
     headers: {
-      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`,
     },
+    body: JSON.stringify(lead),
+  }).then(async (response) => {
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to create lead");
+    }
+
+    return data;
   });
 }
 
