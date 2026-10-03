@@ -2,11 +2,11 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api"
 
 async function request(endpoint, options = {}) {
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
     headers: {
       "Content-Type": "application/json",
       ...(options.headers || {}),
     },
-    ...options,
   });
 
   let data = {};
@@ -49,22 +49,44 @@ export function getLeads(token) {
   });
 }
 
-export function createLead(token, lead) {
-  return fetch(`${API_BASE_URL}/leads`, {
+
+export function importLeads(token, leads) {
+  return request("/leads/import", {
     method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ leads }),
+  });
+}
+
+export function createLead(token, lead) {
+  return request("/leads", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(lead),
+  });
+}
+
+export function updateLead(token, id, lead) {
+  return request(`/leads/${id}`, {
+    method: "PUT",
     headers: {
+      Authorization: `Bearer ${token}`,
       "Content-Type": "application/json",
-      "Authorization": `Bearer ${token}`,
     },
     body: JSON.stringify(lead),
-  }).then(async (response) => {
-    const data = await response.json();
+  });
+}
 
-    if (!response.ok) {
-      throw new Error(data.message || "Failed to create lead");
-    }
+export function deleteLead(token, id) {
+  return request(`/leads/${id}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
 
-    return data;
+export function getLeadActivities(token, id) {
+  return request(`/leads/${id}/activities`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
 }
 
