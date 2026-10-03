@@ -4,7 +4,9 @@ import Topbar from "./components/Topbar";
 import Leads from "./pages/Leads";
 import LeadIntake from "./pages/LeadIntake";
 import LeadDetails from "./pages/LeadDetails";
+import Contacts from "./pages/Contacts";
 import Catalog from "./pages/Catalog";
+import AgentDetailReference from "./pages/AgentDetailReference";
 import Home from "./pages/Home";
 import { SignIn, SignUp } from "./pages/Auth";
 import { getStoredToken } from "./utils/auth";
@@ -28,6 +30,8 @@ export default function App({ dark, setDark }) {
   const path = window.location.pathname;
   const [page, setPage] = useState("leads");
   const [selectedLead, setSelectedLead] = useState(null);
+  const [selectedContact, setSelectedContact] = useState(null);
+  const [selectedAgent, setSelectedAgent] = useState(null);
 
   if (path === "/") return <Home />;
   if (path === "/signin") return <SignIn />;
@@ -47,6 +51,8 @@ export default function App({ dark, setDark }) {
   const navigate = (next) => {
     setPage(next);
     if (next !== "lead-details") setSelectedLead(null);
+    if (next !== "contacts") setSelectedContact(null);
+    if (next !== "talent-acquisition") setSelectedAgent(null);
   };
 
   const openAddLead = () => {
@@ -66,9 +72,10 @@ export default function App({ dark, setDark }) {
         <Topbar dark={dark} setDark={setDark} />
         {page === "leads" && <Leads onOpenLead={openLead} onAddLead={openAddLead} />}
         {page === "add-lead" && <LeadIntake onBack={() => navigate("leads")} onCreated={handleLeadCreated} />}
-        {page === "lead-details" && <LeadDetails lead={selectedLead} onBack={() => navigate("leads")} onDeleted={() => navigate("leads")} onOpenContacts={() => navigate("contacts")} />}
-        {page === "contacts" && <ContactsPlaceholder onBack={() => navigate("leads")} />}
-        {page === "catalog" && <Catalog />}
+        {page === "lead-details" && <LeadDetails lead={selectedLead} onBack={() => navigate("leads")} onDeleted={() => navigate("leads")} onOpenContacts={(lead) => { setSelectedContact(lead); setPage("contacts"); }} />}
+        {page === "contacts" && <Contacts initialContact={selectedContact} onOpenLead={openLead} />}
+        {page === "catalog" && <Catalog onOpenAgent={(agent) => { setSelectedAgent(agent); setPage("talent-acquisition"); }} />}
+        {page === "talent-acquisition" && <AgentDetailReference agent={selectedAgent} onBack={() => navigate("catalog")} />}
       </div>
     </div>
   );
