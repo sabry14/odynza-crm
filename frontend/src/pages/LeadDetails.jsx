@@ -14,7 +14,7 @@ const stages = ["New Lead", "Contacted", "Qualified", "Proposal", "Negotiation",
 
 
 
-export default function LeadDetails({ lead: incomingLead, onBack, onDeleted, onOpenContacts }) {
+export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
 
   const [lead, setLead] = useState(incomingLead ? mapLead(incomingLead) : null);
 
@@ -345,7 +345,7 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted, onO
 
           <div className="panel info-card"><h3><Icon>person</Icon> Lead Owner</h3><p><strong>{owner}</strong></p></div>
 
-          <div className="panel info-card"><h3><Icon>contact_mail</Icon> Contact</h3><p><strong>{lead.name}</strong></p><p>{lead.email || "No email"}</p>{lead.phone && <p>{lead.phone}</p>}<button className="primary-button" type="button" onClick={() => onOpenContacts?.(lead)}><Icon>contacts</Icon> Open Contact</button></div>
+          <div className="panel info-card"><h3><Icon>contact_mail</Icon> Contact</h3><p><strong>{lead.name}</strong></p><p>{lead.email || "No email"}</p>{lead.phone && <p>{lead.phone}</p>}</div>
 
         </aside>
 

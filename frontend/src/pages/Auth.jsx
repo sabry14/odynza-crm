@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Icon from "../components/Icon";
+import ThemeToggle from "../components/ThemeToggle";
 import { login, signup } from "../services/api";
 import { saveAuthSession } from "../utils/auth";
 
@@ -30,7 +31,7 @@ function NetworkVisual() {
   );
 }
 
-function AuthShell({ mode, children }) {
+function AuthShell({ mode, children, dark, setDark }) {
   const signin = mode === "signin";
   return (
     <div className="auth-page">
@@ -65,6 +66,7 @@ function AuthShell({ mode, children }) {
 
         <section className="auth-form-panel">
           <div className="auth-form-wrap">
+            <div className="auth-theme-control"><ThemeToggle dark={dark} setDark={setDark} /></div>
             <div className="auth-switch">
               <a className={signin ? "active" : ""} href="/signin">Sign In</a>
               <a className={!signin ? "active" : ""} href="/signup">Sign Up</a>
@@ -78,7 +80,7 @@ function AuthShell({ mode, children }) {
 }
 
 
-export function SignIn() {
+export function SignIn({ dark, setDark }) {
   const [show, setShow] = useState(false);
   const [remember, setRemember] = useState(true);
   const [email, setEmail] = useState("");
@@ -103,7 +105,7 @@ export function SignIn() {
   };
 
   return (
-    <AuthShell mode="signin">
+    <AuthShell mode="signin" dark={dark} setDark={setDark}>
       <div className="auth-heading">
         <div className="auth-small-label">ODYNZA WORKSPACE</div>
         <h2>Welcome back</h2>
@@ -144,7 +146,7 @@ export function SignIn() {
   );
 }
 
-export function SignUp() {
+export function SignUp({ dark, setDark }) {
   const [show, setShow] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [fullName, setFullName] = useState("");
@@ -190,7 +192,7 @@ export function SignUp() {
   };
 
   return (
-    <AuthShell mode="signup">
+    <AuthShell mode="signup" dark={dark} setDark={setDark}>
       <div className="auth-heading">
         <div className="auth-small-label">NEW WORKSPACE</div>
         <h2>Create your account</h2>

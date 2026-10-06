@@ -4,10 +4,8 @@ import Icon from "./Icon";
 const items = [
   ["dashboard", "Dashboard", "grid_view"],
   ["leads", "Leads", "filter_list"],
-  ["contacts", "Contacts", "contacts"],
   ["deals", "Deals", "monetization_on"],
-  ["pipeline", "Pipeline", "view_kanban"],
-  ["analytics", "Analytics", "monitoring"],
+  ["catalog", "Catalog", "category"],
 ];
 
 export default function Sidebar({ page, onNavigate }) {
@@ -27,7 +25,7 @@ export default function Sidebar({ page, onNavigate }) {
           {items.map(([id, label, icon]) => (
             <button
               key={id}
-              className={`side-item ${page === id || (id === "leads" && page === "lead-details") ? "active" : ""}`}
+              className={`side-item ${page === id || (id === "leads" && page === "lead-details") || (id === "catalog" && page === "talent-acquisition") ? "active" : ""}`}
               onClick={() => onNavigate(id === "dashboard" ? "leads" : id)}
             >
               <Icon>{icon}</Icon>
@@ -36,14 +34,6 @@ export default function Sidebar({ page, onNavigate }) {
           ))}
         </div>
 
-        <div className="side-section">
-          <div className="side-label">Intelligence</div>
-          <button className={`side-item ${page === "catalog" ? "active" : ""}`} onClick={() => onNavigate("catalog")}>
-            <Icon>smart_toy</Icon>
-            <span>Catalog</span>
-            <span className="new-badge">New</span>
-          </button>
-        </div>
       </div>
 
       <div className="side-bottom">

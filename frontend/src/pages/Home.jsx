@@ -1,7 +1,8 @@
 import React from "react";
 import Icon from "../components/Icon";
+import ThemeToggle from "../components/ThemeToggle";
 
-export default function Home() {
+export default function Home({ dark, setDark }) {
   return (
     <div className="entry-page">
       <div className="entry-glow entry-glow-top" />
@@ -15,6 +16,7 @@ export default function Home() {
         </a>
 
         <div className="entry-header-actions">
+          <ThemeToggle dark={dark} setDark={setDark} />
           <a className="entry-link-button" href="/signin">Sign In</a>
           <a className="entry-primary-button" href="/signup">Create Account</a>
         </div>

@@ -1,58 +1,72 @@
+// Product names, categories, availability and features from https://odynza.com/.
+// Descriptions are concise summaries; unpublished specifications are omitted.
+const logoGradients = {
+  Finance: "linear-gradient(135deg,#10b981,#14b8a6)",
+  People: "linear-gradient(135deg,#3b82f6,#6366f1)",
+  Growth: "linear-gradient(135deg,#f97316,#ef4444)",
+  Legal: "linear-gradient(135deg,#a855f7,#ec4899)",
+  Operations: "linear-gradient(135deg,#06b6d4,#3b82f6)",
+  Health: "linear-gradient(135deg,#f43f5e,#dc2626)",
+  Assistant: "linear-gradient(135deg,#326bd6,#212121)",
+  Recruitment: "linear-gradient(135deg,#14b8a6,#10b981)",
+};
+
 export const agents = [
   {
-    id: "hr-egypt-pro", name: "HR Egypt Pro", category: "People",
-    headline: "Automates end-to-end employee onboarding, localized bilingual contracts, and labor compliance.",
-    icon: "badge", tags: ["Onboarding", "Bilingual", "Labor Compliance"],
-    capabilities: ["Automated onboarding workflows", "Bilingual contract formulation", "Social insurance tax audit", "Real-time labor compliance guardrails"],
-    model: "Claude 3.5 Sonnet Fine-Tuned", latency: "410ms", accuracy: "99.8%", cost: "$0.024 / employee run", context: "128k Tokens"
-  },
-  {
     id: "financeflow-egypt", name: "FinanceFlow Egypt", category: "Finance",
-    headline: "Real-time automated reconciliation, invoice ledger validation, and VAT compliance forecasting.",
-    icon: "account_balance", tags: ["Reconciliation", "VAT Rules", "Ledger Audit"],
-    capabilities: ["Real-time dual ledger balancing", "Automated ETA tax matching", "Discrepancy alert routing", "Predictive cash flow hedging"],
-    model: "Claude 3.5 Sonnet", latency: "360ms", accuracy: "99.6%", cost: "$0.018 / run", context: "128k Tokens"
+    headline: "Automated VAT & Tax Engine", icon: "account_balance",
+    description: "Processes Excel sheets and invoices for Egyptian tax classification and ETA submissions.",
+    tags: ["ETA", "VAT", "Cash Flow"],
+    capabilities: ["ETA-compliant invoice generation", "Automated VAT returns", "Real-time cash flow dashboards"],
   },
   {
-    id: "salesscope-mena", name: "SalesScope MENA", category: "Sales",
-    headline: "AI sales intelligence for account research, lead qualification, and opportunity prioritization.",
-    icon: "target", tags: ["Lead Scoring", "Research", "Prioritization"],
-    capabilities: ["Account intelligence", "Lead scoring", "Buying signal detection", "CRM enrichment"],
-    model: "GPT-4.1 Fine-Tuned", latency: "290ms", accuracy: "98.9%", cost: "$0.012 / lead", context: "128k Tokens"
+    id: "hr-egypt-pro", name: "HR Egypt Pro", category: "People",
+    headline: "Labor Law Compliance", icon: "badge",
+    description: "Supports bilingual employment contracts and complex payroll calculations for Egyptian HR teams.",
+    tags: ["Contracts", "Payroll", "Onboarding"],
+    capabilities: ["Labor law compliant docs", "Automated payroll", "Employee onboarding"],
   },
   {
-    id: "supportgenie", name: "SupportGenie", category: "Customer Support",
-    headline: "Autonomous customer support agent with multilingual resolution and escalation workflows.",
-    icon: "support_agent", tags: ["Support", "Multilingual", "Escalation"],
-    capabilities: ["Ticket classification", "Knowledge retrieval", "Multilingual replies", "Human escalation"],
-    model: "GPT-4.1", latency: "240ms", accuracy: "97.8%", cost: "$0.009 / ticket", context: "128k Tokens"
+    id: "marketscope-mena", name: "MarketScope MENA", category: "Growth",
+    headline: "Localized Sales Intelligence", icon: "campaign",
+    description: "Sales and marketing intelligence shaped by Arab market dynamics and customer behavior.",
+    tags: ["Campaigns", "Follow-up", "Localization"],
+    capabilities: ["Ramadan-specific campaigns", "Lead follow-up sequences", "Localized content"],
   },
   {
-    id: "invoice-processing", name: "Invoice Processing Agent", category: "Finance",
-    headline: "Extracts, validates, and routes invoices across ERP and finance workflows.",
-    icon: "receipt_long", tags: ["OCR", "ERP", "Validation"],
-    capabilities: ["Invoice extraction", "PO matching", "Duplicate detection", "Approval routing"],
-    model: "Document AI + LLM", latency: "520ms", accuracy: "99.2%", cost: "$0.014 / invoice", context: "64k Tokens"
+    id: "legaliq-mena", name: "LegalIQ MENA", category: "Legal",
+    headline: "Contract & Compliance", icon: "gavel", comingSoon: true,
+    description: "Legal document processing and compliance checks for Egyptian and MENA frameworks.",
+    tags: ["Contracts", "Compliance", "Drafting"],
+    capabilities: ["Contract summarization", "Compliance verification", "Legal drafting"],
   },
   {
-    id: "cv-screening", name: "CV Screening Agent", category: "People",
-    headline: "Screens CVs against job requirements and ranks qualified candidates automatically.",
-    icon: "person_search", tags: ["CV", "Ranking", "Recruitment"],
-    capabilities: ["CV parsing", "Requirement matching", "Candidate ranking", "Recruiter summaries"],
-    model: "BERT + LLM", latency: "330ms", accuracy: "98.7%", cost: "$0.008 / CV", context: "32k Tokens"
+    id: "logistics-os", name: "LogisticsOS", category: "Operations",
+    headline: "Supply Chain Intelligence", icon: "local_shipping", comingSoon: true,
+    description: "Regional supply chain intelligence for demand, inventory, and logistics.",
+    tags: ["Forecasting", "Inventory", "Routes"],
+    capabilities: ["Demand forecasting", "Inventory optimization", "Route planning"],
   },
   {
-    id: "lead-qualification", name: "Lead Qualification Agent", category: "Sales",
-    headline: "Qualifies inbound leads, extracts requirements, and recommends next sales actions.",
-    icon: "verified", tags: ["Qualification", "Requirements", "Sales"],
-    capabilities: ["Requirement extraction", "Lead scoring", "Next-action suggestions", "CRM enrichment"],
-    model: "LangGraph + LLM", latency: "280ms", accuracy: "98.5%", cost: "$0.011 / lead", context: "64k Tokens"
+    id: "careflow-health", name: "CareFlow Health", category: "Health",
+    headline: "Clinical Workflow Automation", icon: "health_and_safety", comingSoon: true,
+    description: "Workflow automation for regional clinics and medical facilities.",
+    tags: ["Patients", "Appointments", "Billing"],
+    capabilities: ["Patient management", "Appointment scheduling", "Billing automation"],
   },
   {
-    id: "document-intelligence", name: "Document Intelligence Agent", category: "Operations",
-    headline: "Understands enterprise documents and turns unstructured content into structured data.",
-    icon: "description", tags: ["Documents", "Extraction", "RAG"],
-    capabilities: ["Document extraction", "Classification", "Structured output", "RAG-ready indexing"],
-    model: "Vision LLM", latency: "610ms", accuracy: "99.1%", cost: "$0.021 / document", context: "128k Tokens"
-  }
-];
+    id: "egygpt-pro", name: "EgyGPT Pro", category: "Assistant",
+    headline: "Bilingual Corporate Brain", icon: "forum", status: "Flagship",
+    description: "An assistant fluent in Arabic dialects and English, with regional context.",
+    tags: ["Bilingual", "Knowledge Base", "Context"],
+    capabilities: ["Bilingual communication", "Custom knowledge base", "Context awareness"],
+  },
+  {
+    id: "cv-agent", name: "CV Agent", category: "Recruitment",
+    headline: "AI-Powered CV Evaluation", icon: "person_search", status: "Live Now",
+    description: "Batch candidate evaluation for recruiters; CV feedback, gap analysis, and cover letters for job seekers.",
+    tags: ["Recruitment", "CV Optimization", "Interviews"],
+    capabilities: ["Hiring: Batch CV evaluation & ranking", "Applying: CV optimization & cover letters", "20+ interview questions generation"],
+    useNowLink: "https://odynza.com/cv-agent/",
+  },
+].map((agent) => ({ ...agent, logoGradient: logoGradients[agent.category], sourceUrl: "https://odynza.com/#agents-gallery" }));

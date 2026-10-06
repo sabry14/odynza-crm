@@ -1,5 +1,6 @@
 import React from "react";
 import Icon from "./Icon";
+import ThemeToggle from "./ThemeToggle";
 
 function getStoredUser() {
   const raw =
@@ -37,13 +38,7 @@ export default function Topbar({ dark, setDark }) {
 
       <div className="top-actions">
         <div className="live-sync"><span /> LIVE SYNC</div>
-        <button
-          className="icon-button"
-          aria-label="Theme"
-          onClick={() => setDark(!dark)}
-        >
-          <Icon>{dark ? "light_mode" : "dark_mode"}</Icon>
-        </button>
+        <ThemeToggle dark={dark} setDark={setDark} className="icon-button" />
         <button className="icon-button" aria-label="Notifications">
           <Icon>notifications</Icon>
           <i className="notification-dot" />
