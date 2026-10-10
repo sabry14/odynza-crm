@@ -19,7 +19,7 @@ function createToken(user) {
 
 async function signup(req, res) {
   try {
-    const { full_name, email, password, role_id } = req.body;
+    const { full_name, email, password } = req.body;
 
     if (!full_name || !email || !password) {
       return res.status(400).json({
@@ -46,21 +46,16 @@ async function signup(req, res) {
       });
     }
 
-    let selectedRoleId = role_id;
+    const salesRole = await pool.query(
+      "SELECT id FROM roles WHERE name = 'sales' LIMIT 1"
+    );
 
-    if (!selectedRoleId) {
-      const salesRole = await pool.query(
-        "SELECT id FROM roles WHERE name = 'sales' LIMIT 1"
-      );
-
-      if (!salesRole.rows.length) {
-        return res.status(500).json({
-          message: "Default sales role is not configured",
-        });
-      }
-
-      selectedRoleId = salesRole.rows[0].id;
+    if (!salesRole.rows.length) {
+      return res.status(500).json({
+        message: "Default sales role is not configured",
+      });
     }
+    const selectedRoleId = salesRole.rows[0].id;
 
     const passwordHash = await bcrypt.hash(password, 12);
 
@@ -217,7 +212,7 @@ async function me(req, res) {
     }
 
     return res.json({
-      user: result.rows[0],
+      user: { ...result.rows[0], permissions: req.user.permissions || [] },
     });
   } catch (error) {
     console.error("Me error:", error);

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import Icon from "../components/Icon";
 import { createLead } from "../services/api";
 import { getStoredToken } from "../utils/auth";
+import { useAccount } from "../context/AccountContext";
 
 const SOURCE_OPTIONS = [
   "Inbound Demo",
@@ -28,14 +29,9 @@ const initialForm = {
   notes: "",
 };
 
-function getStoredUser() {
-  const raw = localStorage.getItem("odynza_user") || sessionStorage.getItem("odynza_user");
-  try { return raw ? JSON.parse(raw) : null; } catch { return null; }
-}
-
-export default function LeadIntake({ onBack, onCreated }) {
-  const user = getStoredUser();
-  const [form, setForm] = useState(initialForm);
+export default function LeadIntake({ onBack, onCreated, opportunity = false }) {
+  const { user } = useAccount();
+  const [form, setForm] = useState(() => ({ ...initialForm, status: opportunity ? "Qualified" : "New Lead" }));
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
@@ -53,6 +49,8 @@ export default function LeadIntake({ onBack, onCreated }) {
     if (!form.name.trim() || !form.company.trim() || !form.email.trim()) {
       return setError("Name, company, and email are required.");
     }
+    const dealValue = Number(String(form.deal_value).replace(/,/g, ""));
+    if (!Number.isFinite(dealValue) || dealValue < 0) return setError("Estimated value must be a valid non-negative number.");
 
     try {
       setSaving(true);
@@ -65,13 +63,13 @@ export default function LeadIntake({ onBack, onCreated }) {
         domain: form.domain.trim() || null,
         industry: form.industry || null,
         status: form.status,
-        deal_value: Number(String(form.deal_value).replace(/,/g, "")) || 0,
+        deal_value: dealValue,
         source: form.source || null,
         notes: form.notes.trim() || null,
         owner_id: user?.id,
       });
 
-      setToast(`Lead "${data.lead?.name || form.name}" created successfully`);
+      setToast(`${opportunity ? "Opportunity" : "Lead"} "${data.lead?.name || form.name}" created successfully`);
       setTimeout(() => onCreated?.(data.lead), 450);
     } catch (err) {
       setError(err.message || "Unable to create lead");
@@ -84,17 +82,17 @@ export default function LeadIntake({ onBack, onCreated }) {
     <main className="page lead-intake-page">
       <div className="lead-intake-top">
         <button className="back-button" type="button" onClick={onBack}>
-          <Icon>arrow_back</Icon> Leads <span>/</span> <b>Create New Lead</b>
+          <Icon>arrow_back</Icon> {opportunity ? "Deals" : "Leads"} <span>/</span> <b>{opportunity ? "Create Opportunity" : "Create New Lead"}</b>
         </button>
         <div className="lead-intake-title-row">
           <div>
-            <div className="eyebrow"><span /> LEAD INTAKE</div>
-            <h1>New Lead Intake</h1>
-            <p>Create a lead using the fields supported by the Odynza CRM database.</p>
+            <div className="eyebrow"><span /> {opportunity ? "OPPORTUNITY INTAKE" : "LEAD INTAKE"}</div>
+            <h1>{opportunity ? "New Opportunity" : "New Lead Intake"}</h1>
+            <p>{opportunity ? "Create a linked lead starting at Qualified. The same saved record appears in Leads and Deals." : "Create a lead using the fields supported by the Odynza CRM database."}</p>
           </div>
           <button className="primary-button" type="submit" form="lead-intake-form" disabled={saving}>
             <Icon>{saving ? "sync" : "person_add"}</Icon>
-            {saving ? "Creating..." : "Create Lead"}
+            {saving ? "Creating..." : opportunity ? "Create Opportunity" : "Create Lead"}
           </button>
         </div>
       </div>
@@ -151,8 +149,8 @@ export default function LeadIntake({ onBack, onCreated }) {
 
             <label>Pipeline Stage</label>
             <div className="stage-selector stage-selector-wide">
-              {STAGES.map((stage) => (
-                <button key={stage} type="button" className={form.status === stage ? "selected" : ""} onClick={() => setForm((c) => ({ ...c, status: stage }))}>{stage}</button>
+              {(opportunity ? ["Qualified", "Proposal", "Negotiation"] : STAGES).map((stage) => (
+                <button key={stage} type="button" aria-pressed={form.status === stage} className={form.status === stage ? "selected" : ""} onClick={() => setForm((c) => ({ ...c, status: stage }))}>{stage}</button>
               ))}
             </div>
 
@@ -171,7 +169,7 @@ export default function LeadIntake({ onBack, onCreated }) {
             <div className="parameter-warning"><Icon>info</Icon><span>Unknown column names or missing required columns will be reported as conflicts before import.</span></div>
           </section>
 
-          <button className="primary-button full-action" type="submit" disabled={saving}><Icon>check_circle</Icon>{saving ? "Creating..." : "Create Lead"}</button>
+          <button className="primary-button full-action" type="submit" disabled={saving}><Icon>check_circle</Icon>{saving ? "Creating..." : opportunity ? "Create Opportunity" : "Create Lead"}</button>
           <button className="secondary-button full-action" type="button" onClick={onBack} disabled={saving}>Cancel</button>
         </div>
       </form>

@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 
 import Icon from "../components/Icon";
+import { useAccount } from "../context/AccountContext";
+import { canManageLeadRecord } from "../utils/permissions";
 
 import { deleteLead, getLeadActivities, updateLead } from "../services/api";
 
@@ -15,6 +17,7 @@ const stages = ["New Lead", "Contacted", "Qualified", "Proposal", "Negotiation",
 
 
 export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
+  const { user, can } = useAccount();
 
   const [lead, setLead] = useState(incomingLead ? mapLead(incomingLead) : null);
 
@@ -39,6 +42,11 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
   const [activityLoading, setActivityLoading] = useState(false);
 
   const [confirmation, setConfirmation] = useState(null);
+  const managesRecord = canManageLeadRecord(user, lead);
+  const canEdit = managesRecord && can("edit_leads");
+  const canDelete = managesRecord && can("delete_leads");
+  const canChangeStage = managesRecord && can("update_lead_status");
+  const canAddNotes = managesRecord && can("add_lead_notes");
 
 
 
@@ -103,6 +111,7 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
 
 
   const save = async (patch = form, close = true) => {
+    if ((close && !canEdit) || (!close && !canAddNotes)) return showMessage("You do not have permission to make this change.", true);
 
     const token = getStoredToken();
 
@@ -112,7 +121,9 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
 
       setSaving(true);
 
-      const data = await updateLead(token, lead.id, normalizePatch(patch));
+      const changes = normalizePatch(patch);
+      if (close && !canAddNotes) delete changes.notes;
+      const data = await updateLead(token, lead.id, changes);
 
       const next = mapLead(data.lead);
 
@@ -134,7 +145,7 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
 
       showMessage(err.message || "Unable to update lead", true);
 
-      throw err;
+      return null;
 
     } finally {
 
@@ -147,6 +158,7 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
 
 
   const changeStage = async (stage) => {
+    if (!canChangeStage) return showMessage("You do not have permission to change stages.", true);
 
     if (stage === lead.status || stageSaving) return;
 
@@ -191,6 +203,7 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
   };
 
   const confirmDelete = async () => {
+    if (!canDelete) return showMessage("You do not have permission to delete leads.", true);
     const token = getStoredToken();
     if (!token) return showMessage("You are not signed in.", true);
 
@@ -233,9 +246,9 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
 
         <div className="button-row">
 
-          <button className="secondary-button danger-button" onClick={() => setConfirmation({ type: "delete" })}><Icon>delete</Icon> Delete Lead</button>
+          {canDelete && <button className="secondary-button danger-button" onClick={() => setConfirmation({ type: "delete" })}><Icon>delete</Icon> Delete Lead</button>}
 
-          <button className="primary-button" onClick={() => setEditing(true)}><Icon>edit</Icon> Edit Lead</button>
+          {canEdit && <button className="primary-button" onClick={() => setEditing(true)}><Icon>edit</Icon> Edit Lead</button>}
 
         </div>
 
@@ -275,7 +288,7 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
             const active = i === currentIndex && stage !== "Won";
 
             return (
-              <button key={stage} type="button" disabled={stageSaving || deleting} className={`stage-card ${done ? "done" : ""} ${active ? "current" : ""}`} onClick={() => stage !== lead.status && setConfirmation({ type: "stage", stage })}>
+              <button key={stage} type="button" disabled={!canChangeStage || stageSaving || deleting} className={`stage-card ${done ? "done" : ""} ${active ? "current" : ""}`} onClick={() => stage !== lead.status && setConfirmation({ type: "stage", stage })}>
                 <div>
                   <span>{String(i + 1).padStart(2, "0")}. {stage}</span>
                   <Icon>{done ? "check_circle" : active ? "radio_button_checked" : "radio_button_unchecked"}</Icon>
@@ -286,7 +299,7 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
             );
           })}
         </div>
-        <div className="pipeline-hint">Click a stage to review and confirm the change.</div>
+        <div className="pipeline-hint">{canChangeStage ? "Click a stage to review and confirm the change." : "Lead stages are read-only for your account."}</div>
       </section>
 
       <div className="details-grid">
@@ -323,11 +336,11 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
 
             {tab === "Notes" && <div className="notes-editor">
 
-              <div className="section-title"><div><h2>Lead Notes</h2><p>Write notes and save them directly to PostgreSQL.</p></div></div>
+              <div className="section-title"><div><h2>Lead Notes</h2><p>{canAddNotes ? "Write notes and save them directly to PostgreSQL." : "View the recorded notes for this lead."}</p></div></div>
 
-              <textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add qualification notes, requirements, timeline, pain points..." rows={10} />
+              <textarea readOnly={!canAddNotes} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Add qualification notes, requirements, timeline, pain points..." rows={10} />
 
-              <div className="notes-actions"><span>{notes.length} characters</span><button className="primary-button" onClick={saveNotes} disabled={saving}><Icon>save</Icon>{saving ? "Saving..." : "Save Notes"}</button></div>
+              <div className="notes-actions"><span>{notes.length} characters</span>{canAddNotes && <button className="primary-button" onClick={saveNotes} disabled={saving}><Icon>save</Icon>{saving ? "Saving..." : "Save Notes"}</button>}</div>
 
             </div>}
 
@@ -341,7 +354,7 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
 
         <aside className="side-stack">
 
-          <div className="panel info-card"><h3><Icon>note</Icon> Account Notes</h3><p>{lead.notes || "No account notes have been recorded for this lead yet."}</p><button className="secondary-button" onClick={() => setTab("Notes")}><Icon>edit</Icon> Edit Notes</button></div>
+          <div className="panel info-card"><h3><Icon>note</Icon> Account Notes</h3><p>{lead.notes || "No account notes have been recorded for this lead yet."}</p><button className="secondary-button" onClick={() => setTab("Notes")}><Icon>{canAddNotes ? "edit" : "visibility"}</Icon> {canAddNotes ? "Edit Notes" : "View Notes"}</button></div>
 
           <div className="panel info-card"><h3><Icon>person</Icon> Lead Owner</h3><p><strong>{owner}</strong></p></div>
 
@@ -353,7 +366,7 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
 
 
 
-      {editing && <div className="lead-modal-backdrop" onMouseDown={() => !saving && setEditing(false)}>
+      {editing && canEdit && <div className="lead-modal-backdrop" onMouseDown={() => !saving && setEditing(false)}>
 
         <div className="lead-modal edit-lead-modal" onMouseDown={(e) => e.stopPropagation()}>
 
@@ -381,7 +394,7 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
 
             </div>
 
-            <label className="lead-form-full">Notes<textarea value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={5} /></label>
+            <label className="lead-form-full">Notes<textarea readOnly={!canAddNotes} value={form.notes || ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={5} /></label>
 
             <div className="lead-modal-footer"><button className="secondary-button" type="button" onClick={() => setEditing(false)} disabled={saving}>Cancel</button><button className="primary-button" type="submit" disabled={saving}><Icon>save</Icon>{saving ? "Saving..." : "Save Changes"}</button></div>
 
@@ -391,7 +404,7 @@ export default function LeadDetails({ lead: incomingLead, onBack, onDeleted }) {
 
       </div>}
 
-      {confirmation && <div className="lead-modal-backdrop" onMouseDown={() => !deleting && !stageSaving && setConfirmation(null)}>
+      {confirmation && (confirmation.type === "delete" ? canDelete : canChangeStage) && <div className="lead-modal-backdrop" onMouseDown={() => !deleting && !stageSaving && setConfirmation(null)}>
         <div className="lead-modal confirmation-modal" role="dialog" aria-modal="true" onMouseDown={(event) => event.stopPropagation()}>
           <div className="lead-modal-header"><div className="lead-modal-title"><div className="lead-modal-icon"><Icon>{confirmation.type === "delete" ? "warning" : "published_with_changes"}</Icon></div><div><h2>{confirmation.type === "delete" ? "Delete this lead?" : "Change lead stage?"}</h2><p>{confirmation.type === "delete" ? `This permanently deletes ${lead.name} and its activity history.` : `Move ${lead.name} to ${confirmation.stage}?`}</p></div></div></div>
           <div className="confirmation-copy">{confirmation.type === "delete" ? "This action cannot be undone." : "The new stage will be saved to the database and added to Recent Activity."}</div>

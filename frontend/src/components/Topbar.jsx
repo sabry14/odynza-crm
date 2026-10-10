@@ -1,21 +1,10 @@
 import React from "react";
 import Icon from "./Icon";
 import ThemeToggle from "./ThemeToggle";
-
-function getStoredUser() {
-  const raw =
-    localStorage.getItem("odynza_user") ||
-    sessionStorage.getItem("odynza_user");
-
-  try {
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
+import { useAccount } from "../context/AccountContext";
 
 export default function Topbar({ dark, setDark }) {
-  const user = getStoredUser();
+  const { user } = useAccount();
   const userName = user?.full_name || user?.name || "User";
   const roleName = user?.role
     ? user.role.replace(/_/g, " ")

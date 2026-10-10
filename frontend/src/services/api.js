@@ -17,7 +17,10 @@ async function request(endpoint, options = {}) {
   }
 
   if (!response.ok) {
-    throw new Error(data.message || "Something went wrong");
+    if ([401, 403].includes(response.status) && endpoint !== "/auth/me") window.dispatchEvent(new Event("odynza:account-refresh"));
+    const error = new Error(data.message || "Something went wrong");
+    error.status = response.status;
+    throw error;
   }
 
   return data;
@@ -46,6 +49,24 @@ export function getCurrentUser(token) {
 export function getLeads(token) {
   return request("/leads", {
     headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function getDashboard(token, signal) {
+  return request("/dashboard", {
+    signal,
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
+export function getUsers(token) {
+  return request("/users", { headers: { Authorization: `Bearer ${token}` } });
+}
+
+export function updateUser(token, id, changes) {
+  return request(`/users/${id}`, {
+    method: "PATCH", headers: { Authorization: `Bearer ${token}` },
+    body: JSON.stringify(changes),
   });
 }
 
@@ -84,8 +105,9 @@ export function deleteLead(token, id) {
   });
 }
 
-export function getLeadActivities(token, id) {
+export function getLeadActivities(token, id, signal) {
   return request(`/leads/${id}/activities`, {
+    signal,
     headers: { Authorization: `Bearer ${token}` },
   });
 }

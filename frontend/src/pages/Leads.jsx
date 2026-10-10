@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import Icon from "../components/Icon";
+import { useAccount } from "../context/AccountContext";
 import { getLeads, importLeads } from "../services/api";
 import { getStoredToken } from "../utils/auth";
 import { formatMoney, getLeadInitials, mapLead } from "../utils/leads";
@@ -64,6 +65,7 @@ function inspectCsv(text) {
 }
 
 export default function Leads({ onOpenLead, onAddLead }) {
+  const { can } = useAccount();
   const [query, setQuery] = useState("");
   const [leads, setLeads] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -162,7 +164,7 @@ export default function Leads({ onOpenLead, onAddLead }) {
     <main className="page">
       <div className="page-header">
         <div><div className="eyebrow"><span /> LEAD MANAGEMENT <b>•</b> {leads.length} TOTAL</div><h1>Leads</h1><p>Monitor pipeline health, manage prospects, import records, and keep lead data consistent.</p></div>
-        <div className="button-row"><button className="secondary-button" onClick={() => setShowImport(true)} type="button"><Icon>upload_file</Icon> Import CSV</button><button className="primary-button" onClick={() => onAddLead?.()} type="button"><Icon>person_add</Icon> Add Lead</button></div>
+        {can("create_leads") && <div className="button-row"><button className="secondary-button" onClick={() => setShowImport(true)} type="button"><Icon>upload_file</Icon> Import CSV</button><button className="primary-button" onClick={() => onAddLead?.()} type="button"><Icon>person_add</Icon> Add Lead</button></div>}
       </div>
 
       <div className="metric-grid">{[["Total Active Leads", totalActive, "Current account", "groups"],["Qualified Opportunities", qualified, "Qualified / proposal / negotiation", "verified"],["Pipeline Value", formatMoney(pipelineValue), "Active pipeline", "trending_up"],["Visible Leads", leads.length, "Based on your permissions", "visibility"]].map(([title, value, sub, icon]) => <div className="metric-card" key={title}><div className="metric-top"><span>{title}</span><Icon>{icon}</Icon></div><strong>{value}</strong><small>{sub}</small></div>)}</div>
@@ -178,7 +180,7 @@ export default function Leads({ onOpenLead, onAddLead }) {
         {!loading && !error && <div className="table-scroll"><table className="leads-table"><thead><tr>{ALL_COLUMNS.map(([key, label]) => isVisible(key) ? <th key={key}>{label}</th> : null)}</tr></thead><tbody>{filtered.map((lead) => <tr key={lead.id} onClick={() => onOpenLead?.(lead)}>{ALL_COLUMNS.map(([key]) => renderCell(lead, key))}</tr>)}{!filtered.length && <tr><td colSpan={visibleColumns.size} style={{ textAlign: "center", padding: "32px" }}>No leads found.</td></tr>}</tbody></table></div>}
       </section>
 
-      {showImport && <div className="lead-modal-backdrop" onMouseDown={() => !importing && setShowImport(false)}>
+      {showImport && can("create_leads") && <div className="lead-modal-backdrop" onMouseDown={() => !importing && setShowImport(false)}>
         <div className="lead-modal csv-import-modal" onMouseDown={(e) => e.stopPropagation()}>
           <div className="lead-modal-header"><div className="lead-modal-title"><div className="lead-modal-icon"><Icon>upload_file</Icon></div><div><h2>Import Leads from CSV</h2><p>Check your headers and rows before anything is inserted.</p></div></div><button className="icon-button" type="button" onClick={() => setShowImport(false)}><Icon>close</Icon></button></div>
           <div className="csv-parameter-box"><div><strong>Required columns</strong><span>{REQUIRED_HEADERS.join(", ")}</span></div><div><strong>Optional columns</strong><span>{EXPECTED_HEADERS.filter((x) => !REQUIRED_HEADERS.includes(x)).join(", ")}</span></div><p><Icon>warning</Icon> Use the exact parameter names above. Unknown columns, missing required columns, invalid status values, invalid emails, or invalid deal values will be shown as conflicts and will block the import until fixed.</p></div>

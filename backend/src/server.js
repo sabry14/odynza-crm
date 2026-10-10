@@ -5,6 +5,8 @@ require("dotenv").config();
 const pool = require("./config/database");
 const authRoutes = require("./routes/authRoutes");
 const leadsRoutes = require("./routes/leadsRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const usersRoutes = require("./routes/usersRoutes");
 
 const app = express();
 
@@ -39,6 +41,8 @@ app.get("/api/db-test", async (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/leads", leadsRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/users", usersRoutes);
 
 app.use((req, res) => {
   res.status(404).json({

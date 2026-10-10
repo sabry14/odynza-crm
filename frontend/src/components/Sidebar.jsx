@@ -1,5 +1,6 @@
 import React from "react";
 import Icon from "./Icon";
+import { useAccount } from "../context/AccountContext";
 
 const items = [
   ["dashboard", "Dashboard", "grid_view"],
@@ -9,6 +10,7 @@ const items = [
 ];
 
 export default function Sidebar({ page, onNavigate }) {
+  const { can, isUserAdmin } = useAccount();
   return (
     <aside className="sidebar">
       <div>
@@ -22,17 +24,21 @@ export default function Sidebar({ page, onNavigate }) {
 
         <div className="side-section">
           <div className="side-label">Operations</div>
-          {items.map(([id, label, icon]) => (
+          {items.filter(([id]) => can(id === "catalog" ? "view_catalog" : "view_leads")).map(([id, label, icon]) => (
             <button
               key={id}
+              title={label}
+              aria-label={label}
               className={`side-item ${page === id || (id === "leads" && page === "lead-details") || (id === "catalog" && page === "talent-acquisition") ? "active" : ""}`}
-              onClick={() => onNavigate(id === "dashboard" ? "leads" : id)}
+              onClick={() => onNavigate(id)}
             >
               <Icon>{icon}</Icon>
               <span>{label}</span>
             </button>
           ))}
         </div>
+
+        {isUserAdmin && <div className="side-section"><div className="side-label">Administration</div><button title="Users" aria-label="Users" className={`side-item ${page === "users" ? "active" : ""}`} onClick={() => onNavigate("users")}><Icon>manage_accounts</Icon><span>Users</span></button></div>}
 
       </div>
 
